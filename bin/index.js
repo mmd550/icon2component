@@ -8,7 +8,8 @@ const argv = yargs(hideBin(process.argv)).argv
 const fs = require('fs').promises
 const path = require('path')
 const prettier = require('prettier')
-const prettierConfig = require('../.prettierrc.json')
+
+const prettierDefaultConfig = {}
 
 function message(...message) {
   const prefix = '☺☺☺'
@@ -36,7 +37,7 @@ async function prettify(source, filePath) {
       configFile = require(configFilePath)
     }
 
-    const config = configFile || prettierConfig
+    const config = configFile || prettierDefaultConfig
     const formatted = await prettier.format(source, {
       ...config,
       parser: 'babel',
