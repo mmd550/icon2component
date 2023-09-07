@@ -1,6 +1,6 @@
 {
   "name": "@weblite/icon-cli",
-  "version": "0.0.13",
+  "version": "0.0.15",
   "description": "A simple cli for converting svg icons to mui compatible components",
   "main": "bin/index.js",
   "bin": {
@@ -16,10 +16,10 @@
     "@svgr/babel-plugin-add-jsx-attribute": "^8.0.0",
     "@svgr/babel-plugin-remove-jsx-attribute": "^8.0.0",
     "@svgr/cli": "^8.1.0",
+    "prettier": "^3.0.3",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/node": "^20.5.9",
-    "prettier": "^3.0.3"
+    "@types/node": "^20.5.9"
   }
 }
