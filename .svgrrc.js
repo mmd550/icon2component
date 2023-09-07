@@ -18,18 +18,6 @@ module.exports = {
             elements: ["SvgIcon"],
             attributes: ["width", "height", "fill"],
           },
-          {
-            elements: [
-              "path",
-              "circle",
-              "ellipse",
-              "line",
-              "polygon",
-              "polyline",
-              "rect",
-            ],
-            attributes: ["style"],
-          }
         ],
         [
           "@svgr/babel-plugin-add-jsx-attribute",
