@@ -26,7 +26,6 @@ async function execute(command) {
 async function bootstrap(){
   const commandsHandlers = getCommands();
   if (/(-c)|(create)|(make)/.test(argv["_"][0])) {
-    console.log("in create")
     await commandsHandlers.createIconComponents();
     return;
   }
