@@ -13,10 +13,10 @@ function muiTemplate(variables, { tpl }) {
   })
 
   return tpl`
-  // template: streamline-solid
+  // template: mui
   import * as React from "react";
   import { SvgIcon, SvgIconProps } from "@mui/material";
-  import { memo } from "react";
+  
   const ${variables.componentName} = (props: SvgIconProps) => {
     return (
       ${variables.jsx}

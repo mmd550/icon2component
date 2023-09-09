@@ -4,7 +4,7 @@ const indexTemplate = require('./templates/index/template.ts')
 module.exports = {
   icon: true,
   typescript: true,
-  memo: true,
+  memo: false,
   template,
   indexTemplate,
   ignoreExisting: false,
