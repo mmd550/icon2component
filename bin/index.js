@@ -17,6 +17,12 @@ function message(...message) {
   console.log(prefix, ...message)
 }
 
+function logError(...message) {
+  const prefix = '☹️👎 '
+
+  console.log(prefix, ...message)
+}
+
 async function execute(command) {
   return new Promise(function (resolve) {
     exec(command, (err, stdout) => {
@@ -28,6 +34,7 @@ async function execute(command) {
   })
 }
 
+const PrettifyError = 'prettify-error'
 async function prettify(source, filePath) {
   try {
     const configFilePath = await prettier.resolveConfigFile(filePath)
@@ -43,8 +50,8 @@ async function prettify(source, filePath) {
       parser: 'babel',
     })
   } catch (err) {
-    console.log("couldn't prettify")
-    return source
+    logError('error happened when prettifying file: ', err.message)
+    throw new Error(PrettifyError)
   }
 }
 
@@ -73,13 +80,21 @@ function getCommands() {
     try {
       const unFormattedPrevIndexFile = await fs.readFile(indexFilePath, 'utf-8')
       prevIndexFile = await prettify(unFormattedPrevIndexFile, indexFilePath)
-    } catch (err) {}
+    } catch (err) {
+      if (err.message !== PrettifyError) {
+        logError("couldn't read index file! ", err.message)
+      }
+      return
+    }
 
     const configPath = path.join(__dirname.slice(0, -3), '.svgrrc.js')
-
-    await execute(
-      `svgr --config-file ${configPath} --out-dir ${outDir} -- ${sourceDir}`,
-    )
+    try {
+      await execute(
+        `svgr --config-file ${configPath} --out-dir ${outDir} -- ${sourceDir}`,
+      )
+    } catch (err) {
+      logError("couldn't convert!", err.message)
+    }
 
     if (prevIndexFile) {
       try {
@@ -91,8 +106,12 @@ function getCommands() {
           unFormattedNewIndexFile,
           indexFilePath,
         )
-        const newIndexFileArr = newIndexFile.split('\n')
-        const prevIndexFileArr = prevIndexFile.split('\n')
+        const newIndexFileArr = newIndexFile
+          .split('\n')
+          .filter(line => line !== '\n')
+        const prevIndexFileArr = prevIndexFile
+          .split('\n')
+          .filter(line => line !== '\n')
 
         newIndexFileArr.forEach(line => {
           if (!prevIndexFileArr.includes(line)) {
@@ -102,8 +121,9 @@ function getCommands() {
 
         const resultIndexFile = prevIndexFileArr.join('\n')
         await fs.writeFile(indexFilePath, resultIndexFile)
-      } finally {
         message(`Icon files converted and added to ${outDir}`)
+      } catch (err) {
+        err.message !== PrettifyError && logError(err.message)
       }
     }
   }
