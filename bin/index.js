@@ -38,11 +38,10 @@ async function prettify(source, filePath) {
     }
 
     const config = configFile || prettierDefaultConfig
-    const formatted = await prettier.format(source, {
+    return await prettier.format(source, {
       ...config,
       parser: 'babel',
     })
-    return formatted
   } catch (err) {
     console.log("couldn't prettify")
     return source
@@ -95,13 +94,13 @@ function getCommands() {
         const newIndexFileArr = newIndexFile.split('\n')
         const prevIndexFileArr = prevIndexFile.split('\n')
 
-        prevIndexFileArr.forEach(line => {
-          if (!newIndexFileArr.includes(line)) {
-            newIndexFileArr.push(line)
+        newIndexFileArr.forEach(line => {
+          if (!prevIndexFileArr.includes(line)) {
+            prevIndexFileArr.push(line)
           }
         })
 
-        const resultIndexFile = newIndexFileArr.join('\n')
+        const resultIndexFile = prevIndexFileArr.join('\n')
         await fs.writeFile(indexFilePath, resultIndexFile)
       } finally {
         message(`Icon files converted and added to ${outDir}`)
