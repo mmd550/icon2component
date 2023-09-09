@@ -111,7 +111,7 @@ function getCommands() {
           .filter(line => line !== '\n')
         const prevIndexFileArr = prevIndexFile
           .split('\n')
-          .filter(line => line !== '\n')
+          .filter(line => line && line !== '\n' && line !== '\r\n')
 
         newIndexFileArr.forEach(line => {
           if (!prevIndexFileArr.includes(line)) {
