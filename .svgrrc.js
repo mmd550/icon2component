@@ -1,5 +1,5 @@
-const template = require("./templates/mui/template.ts");
-const indexTemplate = require("./templates/index/template.ts")
+const template = require('./templates/mui/template.ts')
+const indexTemplate = require('./templates/index/template.ts')
 
 module.exports = {
   icon: false,
@@ -8,33 +8,34 @@ module.exports = {
   template,
   indexTemplate,
   ignoreExisting: false,
+  filenameCase: 'kebab',
 
   jsx: {
     babelConfig: {
       plugins: [
         [
-          "@svgr/babel-plugin-remove-jsx-attribute",
+          '@svgr/babel-plugin-remove-jsx-attribute',
           {
-            elements: ["SvgIcon"],
-            attributes: ["width", "height", "fill"],
+            elements: ['SvgIcon'],
+            attributes: ['width', 'height', 'fill'],
           },
         ],
         [
-          "@svgr/babel-plugin-add-jsx-attribute",
+          '@svgr/babel-plugin-add-jsx-attribute',
           {
             elements: [
-              "path",
-              "circle",
-              "ellipse",
-              "line",
-              "polygon",
-              "polyline",
-              "rect",
+              'path',
+              'circle',
+              'ellipse',
+              'line',
+              'polygon',
+              'polyline',
+              'rect',
             ],
             attributes: [
               {
-                name: "fill",
-                value: "currentColor",
+                name: 'fill',
+                value: 'currentColor',
                 spread: false,
                 literal: false,
               },
@@ -44,4 +45,4 @@ module.exports = {
       ],
     },
   },
-};
+}
