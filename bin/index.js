@@ -12,7 +12,7 @@ const prettier = require('prettier')
 const prettierDefaultConfig = {}
 
 function message(...message) {
-  const prefix = '😀 '
+  const prefix = '😀👍 '
 
   console.log(prefix, ...message)
 }
