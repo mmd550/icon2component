@@ -8,7 +8,6 @@ module.exports = {
   template,
   indexTemplate,
   ignoreExisting: false,
-  filenameCase: 'kebab',
 
   jsx: {
     babelConfig: {
