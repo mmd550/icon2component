@@ -1,6 +1,6 @@
 {
   "name": "@weblite/icon-cli",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A simple cli for converting svg icons to mui compatible components",
   "main": "bin/index.js",
   "bin": {

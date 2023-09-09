@@ -2,7 +2,7 @@ const template = require('./templates/mui/template.ts')
 const indexTemplate = require('./templates/index/template.ts')
 
 module.exports = {
-  icon: false,
+  icon: true,
   typescript: true,
   memo: true,
   template,

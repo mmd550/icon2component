@@ -1,18 +1,16 @@
 function muiTemplate(variables, { tpl }) {
   // Change the svg container to MUI's SvgIcon
-  variables.jsx.openingElement.name.name = "SvgIcon";
-  variables.jsx.closingElement.name.name = "SvgIcon";
-
-  variables.props;
+  variables.jsx.openingElement.name.name = 'SvgIcon'
+  variables.jsx.closingElement.name.name = 'SvgIcon'
 
   // Append a {...other} to the opening element's attributes
   variables.jsx.openingElement.attributes.push({
-    type: "JSXSpreadAttribute",
+    type: 'JSXSpreadAttribute',
     argument: {
-      type: "Identifier",
-      name: "props",
+      type: 'Identifier',
+      name: 'props',
     },
-  });
+  })
 
   return tpl`
   // template: streamline-solid
@@ -26,7 +24,7 @@ function muiTemplate(variables, { tpl }) {
   };
    
   ${variables.exports};
-  `;
+  `
 }
 
-module.exports = muiTemplate;
+module.exports = muiTemplate
