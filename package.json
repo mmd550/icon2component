@@ -1,6 +1,6 @@
 {
   "name": "@weblite/icon-cli",
-  "version": "0.0.16",
+  "version": "0.0.1",
   "description": "A simple cli for converting svg icons to mui compatible components",
   "main": "bin/index.js",
   "bin": {
@@ -8,7 +8,10 @@
   },
   "scripts": {
     "make": "svgr --config-file .svgrrc.js --out-dir src -- svgs",
-    "pub": "npm publish --access public"
+    "pub": "npm publish"
+  },
+  "publishConfig": {
+    "@weblite-wapps:registry": " https://git.weblite.me/api/v4/projects/181/packages/npm/"
   },
   "author": "Mohammad Farvardin",
   "license": "ISC",
