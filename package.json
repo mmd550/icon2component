@@ -1,13 +1,17 @@
 {
   "name": "@weblite/icon-cli",
-  "version": "1.0.0.alpha",
+  "version": "1.0.1",
   "description": "A simple cli for converting svg icons to mui compatible components",
-  "main": "bin/index.js",
+  "source": "src/index.ts",
+  "main": "bin/main.js",
+  "module": "bin/module.js",
+  "types": "bin/types.d.ts",
   "bin": {
-    "iconlite": "./bin/index.js"
+    "iconlite": "./bin/main.js"
   },
   "scripts": {
-    "make": "svgr --config-file .svgrrc.js --out-dir src -- svgs",
+    "build": "parcel build",
+    "make": "node ./bin/main.js make --keep-colors --out-dir icons -- svgs",
     "pub": "npm publish"
   },
   "publishConfig": {
@@ -16,18 +20,19 @@
   "author": "Mohammad Farvardin",
   "license": "ISC",
   "dependencies": {
-    "@svgr/babel-plugin-add-jsx-attribute": "^8.0.0",
-    "@svgr/babel-plugin-remove-jsx-attribute": "^8.0.0",
-    "@svgr/cli": "^8.1.0",
-    "@svgr/core": "^8.1.0",
-    "@svgr/plugin-jsx": "^8.1.0",
-    "@svgr/plugin-prettier": "^8.1.0",
     "change-case": "^4.1.2",
     "prettier": "^3.0.3",
     "svgo": "^3.0.2",
+    "svgson": "^5.3.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/node": "^20.5.9"
+    "@parcel/packager-ts": "^2.9.3",
+    "@parcel/transformer-typescript-types": "^2.9.3",
+    "@types/node": "^20.6.1",
+    "@types/prettier": "^3.0.0",
+    "@types/yargs": "^17.0.24",
+    "parcel": "^2.9.3",
+    "typescript": "^5.2.2"
   }
 }

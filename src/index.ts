@@ -1,33 +1,22 @@
 #! /usr/bin/env node
-'use strict'
 
-const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
-const args = yargs(hideBin(process.argv)).argv
-const formatter = require('./formatter')
-const logger = require('./logger')
-const optimizer = require('./optimizer')
-const files = require('./files')
-const svgr = require('@svgr/core')
-const changeCase = require('change-case')
+import files from './files'
+import formatter from './formatter'
+import optimizer from './optimizer'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import iconTemplate from './file-templates/icon/template'
+import indexTemplate from './file-templates/index/template'
+import logger from './logger'
+import * as changeCase from 'change-case'
 
-const muiTemplate = require('../templates/mui/template.ts')
-const defaultTemplate = require('../templates/default/template.ts')
-const indexTemplate = require('../templates/index/template.ts')
+const argv = yargs(hideBin(process.argv)).argv
 
-function getSvgrConfig() {
-  return {
-    icon: true,
-    typescript: true,
-    plugins: ['@svgr/plugin-jsx'],
-    prettier: false,
-    svgo: false,
-    memo: false,
-    template: args['mui'] ? muiTemplate : defaultTemplate,
-  }
-}
-
-async function mergeIndexes(rawOldIndexFile, rawNewIndexFile, indexPath) {
+async function mergeIndexes(
+  rawOldIndexFile: string,
+  rawNewIndexFile: string,
+  indexPath: string,
+) {
   const { format } = await formatter({
     filePath: indexPath,
     options: {
@@ -40,13 +29,13 @@ async function mergeIndexes(rawOldIndexFile, rawNewIndexFile, indexPath) {
 
   const newIndexFileArr = newIndexFile
     .split('\n')
-    .filter(line => line && line !== '\n' && line !== '\r\n')
+    .filter((line: string) => line && line !== '\n' && line !== '\r\n')
 
   const oldIndexFileArr = oldIndexFile
     .split('\n')
-    .filter(line => line && line !== '\n' && line !== '\r\n')
+    .filter((line: string) => line && line !== '\n' && line !== '\r\n')
 
-  newIndexFileArr.forEach(line => {
+  newIndexFileArr.forEach((line: string) => {
     if (!oldIndexFileArr.includes(line)) {
       oldIndexFileArr.push(line)
     }
@@ -56,20 +45,21 @@ async function mergeIndexes(rawOldIndexFile, rawNewIndexFile, indexPath) {
 }
 
 function getArgs() {
-  const sourceDir = args['_'][1]
-  const outDir = args['outdir'] || args['outDir'] || args['out-dir']
-  const deep = args['deep']
-  const keepColors =
-    args['keepColors'] || args['keep-colors'] || args['keepcolors']
-  const mui = args['mui']
-  const ignoreExisting =
-    args['ignoreExisting'] || args['ignore-existing'] || args['ignoreexisting']
+  const sourceDir: string | undefined = argv['_'][1]
+  const outDir: string | undefined =
+    argv['outdir'] || argv['outDir'] || argv['out-dir']
+  const deep: boolean | undefined = argv['deep']
+  const keepColors: boolean | undefined =
+    argv['keepColors'] || argv['keep-colors'] || argv['keepcolors']
+  const mui: boolean | undefined = argv['mui']
+  const ignoreExisting: boolean | undefined =
+    argv['ignoreExisting'] || argv['ignore-existing'] || argv['ignoreexisting']
 
   return { sourceDir, outDir, deep, keepColors, mui, ignoreExisting }
 }
 
 async function bootstrap() {
-  if (/(make)/.test(args['_'][0])) {
+  if (/(make)/.test(argv['_'][0])) {
     await commands.createComponents()
     return
   }
@@ -77,9 +67,7 @@ async function bootstrap() {
 
 const commands = {
   async createComponents() {
-    const { sourceDir, outDir, deep, keepColors, ignoreExisting } =
-      getArgs()
-    const svgrConfig = getSvgrConfig()
+    const { sourceDir, outDir, deep, keepColors, ignoreExisting } = getArgs()
     const { optimize } = optimizer({ keepColors })
 
     if (!outDir || !sourceDir) {
@@ -117,12 +105,11 @@ const commands = {
         const svgString = await readFile(icon.sourceFilePath)
         const optimizedSvg = await optimize(svgString)
 
-        const component = await svgr.transform(optimizedSvg, svgrConfig, {
+        const component = await iconTemplate(optimizedSvg, {
           componentName: changeCase.pascalCase(icon.name) + 'Icon',
-          filePath: icon.outputFilePath,
         })
-        const newComponent = component.replace(/\/\/{{enter}}/g, '\n')
-        const formattedComponent = await format(newComponent)
+
+        const formattedComponent = await format(component)
 
         await writeFile(icon.outputFilePath, formattedComponent)
         convertedIcons.push({
@@ -141,6 +128,8 @@ const commands = {
       )
       await writeFile(indexPath, mergedIndexFile)
     }
+
+    logger.success(`icons converted and added to ${outDir} successfully.`)
   },
 }
 

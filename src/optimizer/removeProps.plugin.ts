@@ -1,24 +1,24 @@
-const nodes = ['svg']
+const nodes = ["svg"];
 
-const attrs = ['width', 'height', 'fill']
+const attrs = ["width", "height", "fill"];
 
-const removeProps = {
-  name: 'remove-props',
+const removePropsPlugin = {
+  name: "remove-props",
   fn: () => {
     return {
       element: {
-        enter: node => {
+        enter: (node: any) => {
           if (nodes.includes(node.name)) {
             for (let attr of attrs) {
               if (attr in node.attributes) {
-                delete node.attributes[attr]
+                delete node.attributes[attr];
               }
             }
           }
         },
       },
-    }
+    };
   },
-}
+};
 
-module.exports = removeProps
+export default removePropsPlugin;
