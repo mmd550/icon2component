@@ -1,6 +1,6 @@
 const path = require('path')
 const { pascalCase } = require('change-case')
-function defaultIndexTemplate(filePaths) {
+function indexTemplate(filePaths) {
   const exportEntries = filePaths.map(({ path: filePath }) => {
     const basename = path.basename(filePath, path.extname(filePath))
     const exportName = /^\d/.test(basename)
@@ -11,4 +11,4 @@ function defaultIndexTemplate(filePaths) {
   return exportEntries.join('\n')
 }
 
-module.exports = defaultIndexTemplate
+module.exports = indexTemplate

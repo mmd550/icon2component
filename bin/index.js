@@ -1,134 +1,147 @@
 #! /usr/bin/env node
 'use strict'
 
-const { exec } = require('child_process')
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
-const argv = yargs(hideBin(process.argv)).argv
-const fs = require('fs').promises
-const path = require('path')
-const prettier = require('prettier')
+const args = yargs(hideBin(process.argv)).argv
+const formatter = require('./formatter')
+const logger = require('./logger')
+const optimizer = require('./optimizer')
+const files = require('./files')
+const svgr = require('@svgr/core')
+const changeCase = require('change-case')
 
-const prettierDefaultConfig = {}
+const muiTemplate = require('../templates/mui/template.ts')
+const defaultTemplate = require('../templates/default/template.ts')
+const indexTemplate = require('../templates/index/template.ts')
 
-function message(...message) {
-  const prefix = '😀👍 '
-
-  console.log(prefix, ...message)
-}
-
-function logError(...message) {
-  const prefix = '☹️👎 '
-
-  console.log(prefix, ...message)
-}
-
-async function execute(command) {
-  return new Promise(function (resolve) {
-    exec(command, (err, stdout) => {
-      resolve(stdout)
-      if (err) {
-        message(`exec error: ${err}\n`, 'command: ', command)
-      }
-    })
-  })
-}
-
-const PrettifyError = 'prettify-error'
-async function prettify(source, filePath) {
-  try {
-    const configFilePath = await prettier.resolveConfigFile(filePath)
-    let configFile
-
-    if (configFilePath) {
-      configFile = require(configFilePath)
-    }
-
-    const config = configFile || prettierDefaultConfig
-    return await prettier.format(source, {
-      ...config,
-      parser: 'babel',
-    })
-  } catch (err) {
-    logError('error happened when prettifying file: ', err.message)
-    throw new Error(PrettifyError)
+function getSvgrConfig() {
+  return {
+    icon: true,
+    typescript: true,
+    plugins: ['@svgr/plugin-jsx'],
+    prettier: false,
+    svgo: false,
+    memo: false,
+    template: args['mui'] ? muiTemplate : defaultTemplate,
   }
 }
 
+async function mergeIndexes(rawOldIndexFile, rawNewIndexFile, indexPath) {
+  const { format } = await formatter({
+    filePath: indexPath,
+    options: {
+      parser: 'babel-ts',
+    },
+  })
+
+  const newIndexFile = await format(rawNewIndexFile)
+  const oldIndexFile = await format(rawOldIndexFile)
+
+  const newIndexFileArr = newIndexFile
+    .split('\n')
+    .filter(line => line && line !== '\n' && line !== '\r\n')
+
+  const oldIndexFileArr = oldIndexFile
+    .split('\n')
+    .filter(line => line && line !== '\n' && line !== '\r\n')
+
+  newIndexFileArr.forEach(line => {
+    if (!oldIndexFileArr.includes(line)) {
+      oldIndexFileArr.push(line)
+    }
+  })
+
+  return oldIndexFileArr.join('\n')
+}
+
+function getArgs() {
+  const sourceDir = args['_'][1]
+  const outDir = args['outdir'] || args['outDir'] || args['out-dir']
+  const deep = args['deep']
+  const keepColors =
+    args['keepColors'] || args['keep-colors'] || args['keepcolors']
+  const mui = args['mui']
+  const ignoreExisting =
+    args['ignoreExisting'] || args['ignore-existing'] || args['ignoreexisting']
+
+  return { sourceDir, outDir, deep, keepColors, mui, ignoreExisting }
+}
+
 async function bootstrap() {
-  const commandsHandlers = getCommands()
-  if (/(-c)|(create)|(make)/.test(argv['_'][0])) {
-    await commandsHandlers.createIconComponents()
+  if (/(make)/.test(args['_'][0])) {
+    await commands.createComponents()
     return
   }
 }
 
-function getCommands() {
-  async function createIconComponents() {
-    const sourceDir = argv['_'][1]
-    const outDir = argv['outdir'] || argv['outDir'] || argv['out-dir']
+const commands = {
+  async createComponents() {
+    const { sourceDir, outDir, deep, keepColors, ignoreExisting } =
+      getArgs()
+    const svgrConfig = getSvgrConfig()
+    const { optimize } = optimizer({ keepColors })
+
     if (!outDir || !sourceDir) {
-      message(
+      logger.error(
         'Please provide source and output paths\n',
-        'example: iconlite create --out-dir <out-dir> <source-dir>',
+        'example: iconlite make --out-dir <out-dir> <source-dir>',
       )
       return
     }
-    let prevIndexFile
-    const indexFilePath = path.join(outDir, 'index.ts')
 
-    try {
-      const unFormattedPrevIndexFile = await fs.readFile(indexFilePath, 'utf-8')
-      prevIndexFile = await prettify(unFormattedPrevIndexFile, indexFilePath)
-    } catch (err) {
-      if (err.message !== PrettifyError) {
-        logError("couldn't read index file! ", err.message)
-      }
-      return
-    }
+    const { getPathsTree, createDir, readFile, writeFile } = await files({
+      src: sourceDir,
+      output: outDir,
+      deep,
+    })
 
-    const configPath = path.join(__dirname.slice(0, -3), '.svgrrc.js')
-    try {
-      await execute(
-        `svgr --config-file ${configPath} --out-dir ${outDir} -- ${sourceDir}`,
-      )
-    } catch (err) {
-      logError("couldn't convert!", err.message)
-    }
+    const pathsTree = getPathsTree()
 
-    if (prevIndexFile) {
-      try {
-        const unFormattedNewIndexFile = await fs.readFile(
-          indexFilePath,
-          'utf-8',
-        )
-        const newIndexFile = await prettify(
-          unFormattedNewIndexFile,
-          indexFilePath,
-        )
-        const newIndexFileArr = newIndexFile
-          .split('\n')
-          .filter(line => line !== '\n')
-        const prevIndexFileArr = prevIndexFile
-          .split('\n')
-          .filter(line => line && line !== '\n' && line !== '\r\n')
+    for (let directory in pathsTree) {
+      const dir = pathsTree[directory]
+      const icons = dir.iconPaths
+      const outDir = dir.outDir
+      const indexPath = dir.indexFilePath
+      await createDir(outDir)
+      const convertedIcons = []
 
-        newIndexFileArr.forEach(line => {
-          if (!prevIndexFileArr.includes(line)) {
-            prevIndexFileArr.push(line)
-          }
+      for (let icon of icons) {
+        if (ignoreExisting && icon.alreadyExists) continue
+        const { format } = await formatter({
+          filePath: icon.outputFilePath,
+          options: {
+            parser: 'babel-ts',
+          },
         })
+        const svgString = await readFile(icon.sourceFilePath)
+        const optimizedSvg = await optimize(svgString)
 
-        const resultIndexFile = prevIndexFileArr.join('\n')
-        await fs.writeFile(indexFilePath, resultIndexFile)
-        message(`Icon files converted and added to ${outDir}`)
-      } catch (err) {
-        err.message !== PrettifyError && logError(err.message)
+        const component = await svgr.transform(optimizedSvg, svgrConfig, {
+          componentName: changeCase.pascalCase(icon.name) + 'Icon',
+          filePath: icon.outputFilePath,
+        })
+        const newComponent = component.replace(/\/\/{{enter}}/g, '\n')
+        const formattedComponent = await format(newComponent)
+
+        await writeFile(icon.outputFilePath, formattedComponent)
+        convertedIcons.push({
+          path: icon.outputFilePath,
+          originalPath: icon.sourceFilePath,
+        })
       }
-    }
-  }
 
-  return { createIconComponents }
+      const newIndexFile = indexTemplate(convertedIcons)
+      const oldIndexFile = await readFile(indexPath)
+
+      const mergedIndexFile = await mergeIndexes(
+        oldIndexFile,
+        newIndexFile,
+        indexPath,
+      )
+      await writeFile(indexPath, mergedIndexFile)
+    }
+  },
 }
 
 bootstrap()

@@ -16,13 +16,13 @@ function muiTemplate(variables, { tpl }) {
   // template: mui
   import * as React from "react";
   import { SvgIcon, SvgIconProps } from "@mui/material";
-  
+  //{{enter}}
   const ${variables.componentName} = (props: SvgIconProps) => {
     return (
       ${variables.jsx}
     );
   };
-   
+  //{{enter}}
   ${variables.exports};
   `
 }
