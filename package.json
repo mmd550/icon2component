@@ -1,18 +1,16 @@
 {
   "name": "@weblite/icon-cli",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "A simple cli for converting svg icons to mui compatible components",
-  "source": "src/index.ts",
-  "main": "bin/main.js",
-  "module": "bin/module.js",
-  "types": "bin/types.d.ts",
+  "main": "./dist/src/main.js",
   "bin": {
-    "iconlite": "./bin/main.js"
+    "iconlite": "./dist/src/index.js"
   },
   "scripts": {
-    "build": "parcel build",
     "make": "node ./bin/main.js make --keep-colors --out-dir icons -- svgs",
-    "pub": "npm publish"
+    "pub": "npm publish",
+    "prebuild": "rimraf ./dist/ ./exec/",
+    "build": "tsc"
   },
   "publishConfig": {
     "@weblite:registry": "https://git.weblite.me/api/v4/projects/207/packages/npm/"
@@ -26,13 +24,15 @@
     "svgson": "^5.3.1",
     "yargs": "^17.7.2"
   },
+  "files": [
+    "dist/**/*"
+  ],
   "devDependencies": {
-    "@parcel/packager-ts": "^2.9.3",
-    "@parcel/transformer-typescript-types": "^2.9.3",
     "@types/node": "^20.6.1",
     "@types/prettier": "^3.0.0",
     "@types/yargs": "^17.0.24",
-    "parcel": "^2.9.3",
+    "rimraf": "^5.0.1",
+    "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }
 }

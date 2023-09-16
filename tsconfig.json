@@ -1,9 +1,11 @@
 {
-    "compilerOptions": {
-      "target": "ES5",
-      "lib": ["ES2015"],
-      "types": ["node"],
-      "esModuleInterop": true
-    }
-  }
-  
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "target": "ES2015",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "exclude": ["./node_modules", "bin", "icons", "svgs"]
+}
