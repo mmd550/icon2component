@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-import files from './files'
+import FileSystem from './files'
 import formatter from './formatter'
 import optimizer from './optimizer'
 import yargs from 'yargs'
@@ -78,20 +78,20 @@ const commands = {
       return
     }
 
-    const { getPathsTree, createDir, readFile, writeFile } = await files({
+    const fs = new FileSystem({
       src: sourceDir,
       output: outDir,
       deep,
     })
 
-    const pathsTree = getPathsTree()
+    const pathsTree = await fs.getPathsTree()
 
     for (let directory in pathsTree) {
       const dir = pathsTree[directory]
       const icons = dir.iconPaths
       const outDir = dir.outDir
       const indexPath = dir.indexFilePath
-      await createDir(outDir)
+      await fs.createDir(outDir)
       const convertedIcons = []
 
       for (let icon of icons) {
@@ -102,7 +102,7 @@ const commands = {
             parser: 'babel-ts',
           },
         })
-        const svgString = await readFile(icon.sourceFilePath)
+        const svgString = await fs.readFile(icon.sourceFilePath)
         const optimizedSvg = await optimize(svgString)
 
         const component = await iconTemplate(optimizedSvg, {
@@ -111,7 +111,7 @@ const commands = {
 
         const formattedComponent = await format(component)
 
-        await writeFile(icon.outputFilePath, formattedComponent)
+        await fs.writeFile(icon.outputFilePath, formattedComponent)
         convertedIcons.push({
           path: icon.outputFilePath,
           originalPath: icon.sourceFilePath,
@@ -119,14 +119,14 @@ const commands = {
       }
 
       const newIndexFile = indexTemplate(convertedIcons)
-      const oldIndexFile = await readFile(indexPath)
+      const oldIndexFile = await fs.readFile(indexPath)
 
       const mergedIndexFile = await mergeIndexes(
         oldIndexFile,
         newIndexFile,
         indexPath,
       )
-      await writeFile(indexPath, mergedIndexFile)
+      await fs.writeFile(indexPath, mergedIndexFile)
     }
 
     logger.success(`icons converted and added to ${outDir} successfully.`)

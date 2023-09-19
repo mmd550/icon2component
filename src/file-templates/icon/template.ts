@@ -1,4 +1,4 @@
-const svgson = require('svgson')
+import * as svgson from 'svgson'
 
 async function iconTemplate(
   svgString: string,

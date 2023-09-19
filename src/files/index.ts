@@ -1,127 +1,118 @@
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
-import * as changeCase from "change-case";
+import * as fs from 'node:fs/promises'
+import * as path from 'node:path'
+import * as changeCase from 'change-case'
+import { PathsTree, FileSystemProps, Casing } from './interfaces'
 
-interface Props {
-  src: string;
-  output: string;
-  deep?: boolean;
-  ext?: string;
-  casing?:
-    | "camelCase"
-    | "capitalCase"
-    | "constantCase"
-    | "dotCase"
-    | "headerCase"
-    | "noCase"
-    | "paramCase"
-    | "pascalCase"
-    | "pathCase"
-    | "sentenceCase"
-    | "snakeCase";
-}
+class FileSystem {
+  private pathsTree: PathsTree
+  private src: string
+  private output: string
+  private deep: boolean
+  private ext: string
+  private casing: Casing
 
-interface PathsTree {
-  [key: string]: {
-    iconPaths: {
-      sourceFilePath: string;
-      outputFilePath: string;
-      alreadyExists: boolean;
-      name: string;
-    }[];
-    indexFilePath: string;
-    outDir: string;
-  };
-}
-
-async function files({
-  src,
-  output,
-  deep = false,
-  ext = "tsx",
-  casing = "paramCase",
-}: Props) {
-  const pathsTree: PathsTree = {};
-
-  async function isDir(path: string) {
-    return (await fs.lstat(path)).isDirectory();
+  constructor({
+    src,
+    output,
+    deep = false,
+    ext = 'tsx',
+    casing = 'paramCase',
+  }: FileSystemProps) {
+    this.src = src
+    this.output = output
+    this.deep = deep
+    this.ext = ext
+    this.casing = casing
   }
 
-  async function fileExists(path: string) {
+  async isDir(path: string) {
+    return (await fs.lstat(path)).isDirectory()
+  }
+
+  async fileExists(path: string) {
     try {
-      const file = await fs.open(path, "r");
-      file.close();
-      return true;
+      const file = await fs.open(path, 'r')
+      file.close()
+      return true
     } catch (err) {
-      return false;
+      return false
     }
   }
 
-  async function readFile(path: string) {
-    try {
-      const file = await fs.open(path, "r");
-      const read = await file.readFile({ encoding: "utf-8" });
-      file.close();
-      return read;
-    } catch (err) {
-      return "";
-    }
-  }
-
-  async function writeFile(path: string, data: string) {
-    const file = await fs.open(path, "w");
-    file.writeFile(data);
-    file.close();
-  }
-
-  async function createDir(path: string) {
+  async createDir(path: string) {
     await fs.mkdir(path, {
       recursive: true,
-    });
+    })
   }
 
-  async function calculatePaths(source: string) {
-    const filePaths = await fs.readdir(source);
-    const outDir = path.join(output, source.replace(path.join(src), ""));
-    pathsTree[source] = {
+  async readFile(path: string) {
+    try {
+      const file = await fs.open(path, 'r')
+      const read = await file.readFile({ encoding: 'utf-8' })
+      file.close()
+      return read
+    } catch (err) {
+      return ''
+    }
+  }
+
+  async writeFile(path: string, data: string) {
+    const file = await fs.open(path, 'w')
+    file.writeFile(data)
+    file.close()
+  }
+
+  private async calculatePaths(source: string) {
+    const filePaths = await fs.readdir(source)
+    const outDir = path.join(
+      this.output,
+      source.replace(path.join(this.src), ''),
+    )
+
+    this.pathsTree[source] = {
       iconPaths: [],
-      indexFilePath: path.join(outDir, "index.ts"),
+      indexFilePath: path.join(outDir, 'index.ts'),
       outDir,
-    };
+    }
 
     for (let filePath of filePaths) {
-      const wholePath = path.join(source, filePath);
-      const isDirectory = await isDir(wholePath);
-      if (!isDirectory && path.extname(filePath) !== ".svg") continue;
+      const wholePath = path.join(source, filePath)
+      const isDirectory = await this.isDir(wholePath)
+      if (!isDirectory && path.extname(filePath) !== '.svg') continue
       if (isDirectory) {
-        if (deep) {
-          calculatePaths(wholePath);
+        if (this.deep) {
+          await this.calculatePaths(wholePath)
         }
       } else {
-        const parsed = path.parse(wholePath);
-        const name = parsed.name;
-        const casedName = changeCase[casing](name);
-        const out = path.join(output, parsed.dir.replace(path.join(src), ""));
-        const outputFilePath = path.join(out, `${casedName}.${ext}`);
-        const alreadyExists = await fileExists(outputFilePath);
+        const parsed = path.parse(wholePath)
+        const name = parsed.name
+        const casedName = changeCase[this.casing](name)
+        const out = path.join(
+          this.output,
+          parsed.dir.replace(path.join(this.src), ''),
+        )
+        const outputFilePath = path.join(out, `${casedName}.${this.ext}`)
+        const alreadyExists = await this.fileExists(outputFilePath)
 
-        pathsTree[source].iconPaths.push({
+        this.pathsTree[source].iconPaths.push({
           sourceFilePath: wholePath,
           outputFilePath,
           alreadyExists,
           name,
-        });
+        })
       }
     }
   }
 
-  function getPathsTree() {
-    return pathsTree;
+  async getPathsTree() {
+    if (this.pathsTree) {
+      return this.pathsTree
+    } else {
+      this.pathsTree = {}
+      await this.calculatePaths(this.src)
+      return this.pathsTree
+    }
   }
-
-  await calculatePaths(src);
-
-  return { getPathsTree, fileExists, readFile, writeFile, createDir };
 }
 
-export default files;
+export default FileSystem

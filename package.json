@@ -1,16 +1,17 @@
 {
   "name": "@weblite/icon-cli",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A simple cli for converting svg icons to mui compatible components",
   "main": "./dist/src/main.js",
   "bin": {
     "iconlite": "./dist/src/index.js"
   },
   "scripts": {
-    "make": "node ./bin/main.js make --keep-colors --out-dir icons -- svgs",
-    "pub": "npm publish",
+    "make": "node ./dist/src/index.js make --keep-colors --out-dir icons -- svgs",
     "prebuild": "rimraf ./dist/ ./exec/",
-    "build": "tsc"
+    "build": "tsc",
+    "prepub": "npm run build",
+    "pub": "npm publish"
   },
   "publishConfig": {
     "@weblite:registry": "https://git.weblite.me/api/v4/projects/207/packages/npm/"
