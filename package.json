@@ -7,7 +7,7 @@
     "iconlite": "./dist/src/index.js"
   },
   "scripts": {
-    "make": "node ./dist/src/index.js make --keep-colors --out-dir icons -- svgs",
+    "make": "node ./dist/src/index.js make --keep-colors --camel-case-attrs --out-dir icons -- svgs",
     "prebuild": "rimraf ./dist/ ./exec/",
     "build": "tsc",
     "prepub": "npm run build",

@@ -54,8 +54,9 @@ function getArgs() {
   const mui: boolean | undefined = argv['mui']
   const ignoreExisting: boolean | undefined =
     argv['ignoreExisting'] || argv['ignore-existing'] || argv['ignoreexisting']
+  const camelCaseAttrs:boolean|undefined = argv['camelCaseAttrs'] || argv['camel-case-attrs'] || argv['camelcaseattrs']
 
-  return { sourceDir, outDir, deep, keepColors, mui, ignoreExisting }
+  return { sourceDir, outDir, deep, keepColors, mui, ignoreExisting, camelCaseAttrs }
 }
 
 async function bootstrap() {
@@ -67,8 +68,8 @@ async function bootstrap() {
 
 const commands = {
   async createComponents() {
-    const { sourceDir, outDir, deep, keepColors, ignoreExisting } = getArgs()
-    const { optimize } = optimizer({ keepColors })
+    const { sourceDir, outDir, deep, keepColors, ignoreExisting, camelCaseAttrs } = getArgs()
+    const { optimize } = optimizer({ keepColors, camelCaseAttrs })
 
     if (!outDir || !sourceDir) {
       logger.error(
