@@ -1,6 +1,6 @@
 import * as svgson from 'svgson'
 
-async function iconTemplate(
+async function pureIconTemplate(
   svgString: string,
   variables: { componentName: string },
 ) {
@@ -17,13 +17,13 @@ async function iconTemplate(
   )
 
   return `
-  import { SvgIcon, type SvgIconProps } from "@mui/material";
+  import { ComponentProps } from 'react'
 
-  const ${variables.componentName} = (props: SvgIconProps) => {
+  const ${variables.componentName} = (props: ComponentProps<'svg'>) => {
     return (
-      <SvgIcon${rootProps} {...props}>
+      <svg${rootProps} {...props}>
             ${children}
-      </SvgIcon>
+      </svg>
     );
   };
 
@@ -31,4 +31,4 @@ async function iconTemplate(
   `
 }
 
-export default iconTemplate
+export default pureIconTemplate

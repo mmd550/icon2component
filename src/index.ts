@@ -6,12 +6,14 @@ import optimizer from './optimizer'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import iconTemplate from './file-templates/icon/template'
+import pureIconTemplate from './file-templates/icon/pure-template'
 import indexTemplate from './file-templates/index/template'
 import logger from './logger'
 import * as changeCase from 'change-case'
 
 const argv = yargs(hideBin(process.argv)).argv
 
+type Template = 'mui'
 async function mergeIndexes(
   rawOldIndexFile: string,
   rawNewIndexFile: string,
@@ -48,15 +50,26 @@ function getArgs() {
   const sourceDir: string | undefined = argv['_'][1]
   const outDir: string | undefined =
     argv['outdir'] || argv['outDir'] || argv['out-dir']
+  const template: Template | undefined = argv['template']
   const deep: boolean | undefined = argv['deep']
   const keepColors: boolean | undefined =
     argv['keepColors'] || argv['keep-colors'] || argv['keepcolors']
   const mui: boolean | undefined = argv['mui']
   const ignoreExisting: boolean | undefined =
     argv['ignoreExisting'] || argv['ignore-existing'] || argv['ignoreexisting']
-  const camelCaseAttrs:boolean|undefined = argv['camelCaseAttrs'] || argv['camel-case-attrs'] || argv['camelcaseattrs']
+  const camelCaseAttrs: boolean | undefined =
+    argv['camelCaseAttrs'] || argv['camel-case-attrs'] || argv['camelcaseattrs']
 
-  return { sourceDir, outDir, deep, keepColors, mui, ignoreExisting, camelCaseAttrs }
+  return {
+    sourceDir,
+    outDir,
+    deep,
+    keepColors,
+    mui,
+    ignoreExisting,
+    camelCaseAttrs,
+    template,
+  }
 }
 
 async function bootstrap() {
@@ -68,7 +81,15 @@ async function bootstrap() {
 
 const commands = {
   async createComponents() {
-    const { sourceDir, outDir, deep, keepColors, ignoreExisting, camelCaseAttrs } = getArgs()
+    const {
+      sourceDir,
+      outDir,
+      deep,
+      keepColors,
+      ignoreExisting,
+      camelCaseAttrs,
+      template,
+    } = getArgs()
     const { optimize } = optimizer({ keepColors, camelCaseAttrs })
 
     if (!outDir || !sourceDir) {
@@ -106,9 +127,14 @@ const commands = {
         const svgString = await fs.readFile(icon.sourceFilePath)
         const optimizedSvg = await optimize(svgString)
 
-        const component = await iconTemplate(optimizedSvg, {
-          componentName: changeCase.pascalCase(icon.name) + 'Icon',
-        })
+        const component =
+          template === 'mui'
+            ? await iconTemplate(optimizedSvg, {
+                componentName: changeCase.pascalCase(icon.name) + 'Icon',
+              })
+            : await pureIconTemplate(optimizedSvg, {
+                componentName: changeCase.pascalCase(icon.name) + 'Icon',
+              })
 
         const formattedComponent = await format(component)
 
