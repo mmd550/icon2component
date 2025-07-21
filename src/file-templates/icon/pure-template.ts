@@ -17,7 +17,7 @@ async function pureIconTemplate(
   )
 
   return `
-  import { ComponentProps } from 'react'
+  import { type ComponentProps } from 'react'
 
   const ${variables.componentName} = (props: ComponentProps<'svg'>) => {
     return (
