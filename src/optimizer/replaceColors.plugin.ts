@@ -1,17 +1,17 @@
 const nodes = [
-  "path",
-  "circle",
-  "ellipse",
-  "line",
-  "polygon",
-  "polyline",
-  "rect",
-];
+  'path',
+  'circle',
+  'ellipse',
+  'line',
+  'polygon',
+  'polyline',
+  'rect',
+]
 
-const colorAttrs = ["stroke", "fill"];
+const colorAttrs = ['stroke', 'fill']
 
 const replaceColorsPlugin = {
-  name: "replace-colors",
+  name: 'replace-colors',
   fn: () => {
     return {
       element: {
@@ -19,14 +19,15 @@ const replaceColorsPlugin = {
           if (nodes.includes(node.name)) {
             for (let colorAttr of colorAttrs) {
               if (colorAttr in node.attributes) {
-                node.attributes[colorAttr] = "currentColor";
+                if (node.attributes[colorAttr] !== 'none')
+                  node.attributes[colorAttr] = 'currentColor'
               }
             }
           }
         },
       },
-    };
+    }
   },
-};
+}
 
-export default replaceColorsPlugin;
+export default replaceColorsPlugin
