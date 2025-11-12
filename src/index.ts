@@ -11,7 +11,7 @@ import indexTemplate from './file-templates/index/template'
 import logger from './logger'
 import * as changeCase from 'change-case'
 
-type Template = 'mui'
+type Template = 'mui' | 'pure'
 
 type MakeCommandOptions = {
   sourceDir: string
@@ -54,6 +54,32 @@ async function mergeIndexes(
   })
 
   return oldIndexFileArr.join('\n')
+}
+
+const printHelp = () => {
+  const helpLines = [
+    '',
+    'Usage:',
+    '  icon2component <command> [options]',
+    '',
+    'Commands:',
+    '  make <sourceDir>               Convert SVG icons to React components',
+    '',
+    'Make command options:',
+    '  --out-dir <path>               Output directory for generated components (required)',
+    '  --template <mui|pure>                 Use the Material UI SvgIcon template',
+    '  --keep-colors                  Preserve source fill and stroke colors',
+    '  --camel-case-attrs             Convert dashed SVG attributes to camelCase',
+    '  --deep                         Traverse source directories recursively',
+    '  --ignore-existing              Skip icons that already exist in the output directory',
+    '',
+    'Global options:',
+    '  --help                         Show help',
+    '  --version                      Show version number',
+    '',
+  ]
+
+  helpLines.forEach(line => logger.log(line))
 }
 
 const commands = {
@@ -136,7 +162,20 @@ const commands = {
   },
 }
 
-yargs(hideBin(process.argv))
+const rawArgs = hideBin(process.argv)
+
+const wantsHelp =
+  rawArgs.length === 0 ||
+  rawArgs.includes('--help') ||
+  rawArgs.includes('-h') ||
+  rawArgs[0] === 'help'
+
+if (wantsHelp) {
+  printHelp()
+  process.exit(0)
+}
+
+const cli = yargs(rawArgs)
   .scriptName('icon2component')
   .usage('$0 <command> [options]')
   .command<MakeCommandOptions>(
@@ -185,7 +224,6 @@ yargs(hideBin(process.argv))
       await commands.createComponents(args)
     },
   )
-  .help()
-  .alias('h', 'help')
   .strict()
-  .parse()
+
+cli.parse()
