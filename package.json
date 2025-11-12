@@ -1,6 +1,6 @@
 {
   "name": "icon2component",
-  "version": "1.0.8",
+  "version": "1.0.0",
   "description": "A simple cli for converting svg icons to mui compatible components",
   "main": "./dist/src/main.js",
   "bin": {
@@ -12,9 +12,6 @@
     "prepub": "npm run build",
     "pub": "npm publish",
     "test": "node ./dist/src/index.js make --keep-colors --camel-case-attrs --out-dir icons -- svgs"
-  },
-  "publishConfig": {
-    "@weblite:registry": "https://git.weblite.me/api/v4/projects/207/packages/npm/"
   },
   "author": "Mohammad Farvardin",
   "license": "ISC",
