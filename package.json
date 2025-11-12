@@ -1,10 +1,10 @@
 {
-  "name": "@weblite/icon-cli",
+  "name": "icon2component",
   "version": "1.0.8",
   "description": "A simple cli for converting svg icons to mui compatible components",
   "main": "./dist/src/main.js",
   "bin": {
-    "iconlite": "./dist/src/index.js"
+    "icon2component": "./dist/src/index.js"
   },
   "scripts": {
     "make": "node ./dist/src/index.js make --keep-colors --camel-case-attrs --out-dir icons -- svgs",

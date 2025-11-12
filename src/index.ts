@@ -3,7 +3,7 @@
 import FileSystem from './files'
 import formatter from './formatter'
 import optimizer from './optimizer'
-import yargs from 'yargs'
+import yargs, { type ArgumentsCamelCase } from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import iconTemplate from './file-templates/icon/template'
 import pureIconTemplate from './file-templates/icon/pure-template'
@@ -11,9 +11,19 @@ import indexTemplate from './file-templates/index/template'
 import logger from './logger'
 import * as changeCase from 'change-case'
 
-const argv = yargs(hideBin(process.argv)).argv
-
 type Template = 'mui'
+
+type MakeCommandOptions = {
+  sourceDir: string
+  outDir: string
+  template?: Template
+  deep?: boolean
+  keepColors?: boolean
+  ignoreExisting?: boolean
+  camelCaseAttrs?: boolean
+}
+
+type MakeCommandArgs = ArgumentsCamelCase<MakeCommandOptions>
 async function mergeIndexes(
   rawOldIndexFile: string,
   rawNewIndexFile: string,
@@ -46,56 +56,22 @@ async function mergeIndexes(
   return oldIndexFileArr.join('\n')
 }
 
-function getArgs() {
-  const sourceDir: string | undefined = argv['_'][1]
-  const outDir: string | undefined =
-    argv['outdir'] || argv['outDir'] || argv['out-dir']
-  const template: Template | undefined = argv['template']
-  const deep: boolean | undefined = argv['deep']
-  const keepColors: boolean | undefined =
-    argv['keepColors'] || argv['keep-colors'] || argv['keepcolors']
-  const mui: boolean | undefined = argv['mui']
-  const ignoreExisting: boolean | undefined =
-    argv['ignoreExisting'] || argv['ignore-existing'] || argv['ignoreexisting']
-  const camelCaseAttrs: boolean | undefined =
-    argv['camelCaseAttrs'] || argv['camel-case-attrs'] || argv['camelcaseattrs']
-
-  return {
+const commands = {
+  async createComponents({
     sourceDir,
     outDir,
-    deep,
-    keepColors,
-    mui,
-    ignoreExisting,
-    camelCaseAttrs,
+    deep = false,
+    keepColors = false,
+    ignoreExisting = false,
+    camelCaseAttrs = false,
     template,
-  }
-}
-
-async function bootstrap() {
-  if (/(make)/.test(argv['_'][0])) {
-    await commands.createComponents()
-    return
-  }
-}
-
-const commands = {
-  async createComponents() {
-    const {
-      sourceDir,
-      outDir,
-      deep,
-      keepColors,
-      ignoreExisting,
-      camelCaseAttrs,
-      template,
-    } = getArgs()
+  }: MakeCommandArgs) {
     const { optimize } = optimizer({ keepColors, camelCaseAttrs })
 
     if (!outDir || !sourceDir) {
       logger.error(
         'Please provide source and output paths\n',
-        'example: iconlite make --out-dir <out-dir> <source-dir>',
+        'example: icon2component make --out-dir <out-dir> <source-dir>',
       )
       return
     }
@@ -160,4 +136,56 @@ const commands = {
   },
 }
 
-bootstrap()
+yargs(hideBin(process.argv))
+  .scriptName('icon2component')
+  .usage('$0 <command> [options]')
+  .command<MakeCommandOptions>(
+    'make <sourceDir>',
+    'Convert SVG icons to React components',
+    cmd =>
+      cmd
+        .positional('sourceDir', {
+          describe: 'Directory containing source SVG files',
+          type: 'string',
+        })
+        .option('out-dir', {
+          alias: ['outDir', 'outdir'],
+          type: 'string',
+          describe: 'Output directory for generated components',
+          demandOption: true,
+        })
+        .option('template', {
+          choices: ['mui'] as const,
+          describe: 'Use the Material UI SvgIcon template',
+        })
+        .option('keep-colors', {
+          alias: ['keepColors', 'keepcolors'],
+          type: 'boolean',
+          describe: 'Preserve source fill and stroke colors',
+          default: false,
+        })
+        .option('camel-case-attrs', {
+          alias: ['camelCaseAttrs', 'camelcaseattrs'],
+          type: 'boolean',
+          describe: 'Convert dashed SVG attributes to camelCase',
+          default: false,
+        })
+        .option('deep', {
+          type: 'boolean',
+          describe: 'Traverse source directories recursively',
+          default: false,
+        })
+        .option('ignore-existing', {
+          alias: ['ignoreExisting', 'ignoreexisting'],
+          type: 'boolean',
+          describe: 'Skip icons that already exist in the output directory',
+          default: false,
+        }),
+    async args => {
+      await commands.createComponents(args)
+    },
+  )
+  .help()
+  .alias('h', 'help')
+  .strict()
+  .parse()
