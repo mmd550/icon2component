@@ -1,7 +1,7 @@
 {
   "name": "icon2component",
   "version": "1.0.0",
-  "description": "A simple cli for converting svg icons to mui compatible components",
+  "description": "A simple cli for converting svg icons to react components",
   "main": "./dist/src/main.js",
   "bin": {
     "icon2component": "./dist/src/index.js"
