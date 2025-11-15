@@ -23,7 +23,19 @@ type MakeCommandOptions = {
   camelCaseAttrs?: boolean
 }
 
-type MakeCommandArgs = ArgumentsCamelCase<MakeCommandOptions>
+type MakeCommandArgs = ArgumentsCamelCase<MakeCommandOptions> & {
+  '--'?: Array<string | number>
+}
+
+const resolveSourceDir = (args: MakeCommandArgs) => {
+  if (args.sourceDir) return args.sourceDir
+  const trailingArgs = args['--']
+  if (trailingArgs && trailingArgs.length > 0) {
+    const [firstArg] = trailingArgs
+    return typeof firstArg === 'number' ? firstArg.toString() : firstArg
+  }
+  return undefined
+}
 async function mergeIndexes(
   rawOldIndexFile: string,
   rawNewIndexFile: string,
@@ -176,10 +188,13 @@ if (wantsHelp) {
 }
 
 const cli = yargs(rawArgs)
+  .parserConfiguration({
+    'populate--': true,
+  })
   .scriptName('icon2component')
   .usage('$0 <command> [options]')
   .command<MakeCommandOptions>(
-    'make <sourceDir>',
+    'make [sourceDir]',
     'Convert SVG icons to React components',
     cmd =>
       cmd
@@ -221,7 +236,19 @@ const cli = yargs(rawArgs)
           default: false,
         }),
     async args => {
-      await commands.createComponents(args)
+      const sourceDir = resolveSourceDir(args)
+      if (!sourceDir) {
+        logger.error(
+          'Please provide source and output paths\n',
+          'example: icon2component make --out-dir <out-dir> <source-dir>',
+        )
+        return
+      }
+
+      await commands.createComponents({
+        ...args,
+        sourceDir,
+      })
     },
   )
   .strict()

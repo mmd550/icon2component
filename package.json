@@ -1,6 +1,6 @@
 {
   "name": "icon2component",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A simple cli for converting svg icons to react components",
   "main": "./dist/src/main.js",
   "bin": {
@@ -9,6 +9,7 @@
   "scripts": {
     "prebuild": "rimraf ./dist/ ./exec/",
     "build": "tsc",
+    "pretest": "yarn build",
     "prepub": "npm run build",
     "pub": "npm publish",
     "test": "node ./dist/src/index.js make --keep-colors --camel-case-attrs --out-dir icons -- svgs"
