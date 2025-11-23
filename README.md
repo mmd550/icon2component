@@ -9,6 +9,34 @@ A command-line helper for turning raw SVG files into reusable icon components (o
 
 The package exposes the `icon2component` executable once installed.
 
+## Getting Started
+
+1. **Add a script to your project**
+
+   Add the following script to your `package.json`:
+
+   ```json
+   {
+     "scripts": {
+       "generate-icons": "node ./dist/src/index.js make --keep-colors --camel-case-attrs --out-dir icons -- svgs"
+     }
+   }
+   ```
+
+2. **Organize your SVG files**
+
+   Create a folder (`svgs/`) in your project root and place all your SVG files there.
+
+3. **Generate icon components**
+
+   Run the script to convert your SVG files into icon components:
+
+   ```bash
+   yarn generate-icons
+   ```
+
+   This will create the icon components in the `icons/` folder (or the folder specified by `--out-dir`).
+
 ## Usage
 
 Run the CLI from the root of a project that contains an `svgs/` directory with your source assets:

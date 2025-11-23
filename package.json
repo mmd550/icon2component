@@ -1,6 +1,6 @@
 {
   "name": "icon2component",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A simple cli for converting svg icons to react components",
   "main": "./dist/src/main.js",
   "bin": {
@@ -14,8 +14,8 @@
     "pub": "npm publish",
     "test": "node ./dist/src/index.js make --keep-colors --camel-case-attrs --out-dir icons -- svgs"
   },
-  "author": "Mohammad Farvardin",
   "license": "ISC",
+  "author": "Mohammad Farvardin",
   "dependencies": {
     "change-case": "^4.1.2",
     "prettier": "^3.0.3",
@@ -25,6 +25,18 @@
   },
   "files": [
     "dist/**/*"
+  ],
+  "repository":{
+    "type": "git",
+    "url": "https://github.com/mmd550/icon2component"
+  },
+  "keywords": [
+    "svg",
+    "icon",
+    "react",
+    "mui",
+    "component",
+    "generator"
   ],
   "devDependencies": {
     "@types/node": "^20.6.1",
